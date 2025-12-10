@@ -20,7 +20,7 @@ pacman::p_load(readr, readxl, tidyverse, janitor, lubridate, PooledInfRate, ggpu
 tk_clean_names = function(x) {
   if (!require("pacman")) install.packages("pacman")
   pacman::p_load(stringr)
-    
+  
   if(!is.character(x)) {
     stop("x must be a character. Try using colnames(dataframe)")
   } else {
@@ -31,7 +31,7 @@ tk_clean_names = function(x) {
     x = str_replace(x, " ", "_")
     return(x)
   }
-
+  
 }
 
 
@@ -107,7 +107,7 @@ m_m$date <- as.character(m_m$date)
 
 
 # add grouping variables to a new dataset, m1
-# filter to mosquitoes (26 species)
+# filter to mosquitoes 
 m1 <- m_m %>%
   filter(species %in% c("Aedes abserratus", "Aedes aurifer", "Aedes canadensis", "Aedes cinereus", 
                         "Aedes communis", "Aedes excrucians", "Aedes provocans", "Aedes sticticus", 
@@ -127,8 +127,8 @@ m1 <- m_m %>%
 
 # create a data frame of unique sites to be used
 sites = m1 %>%
-   distinct(site, trap_type) %>%
-   count(site)
+  distinct(site, trap_type) %>%
+  count(site)
 # 372
 
 # calculate the total number of traps
@@ -153,8 +153,8 @@ pools = m1 %>% get_dupes(date, site, trap_type, species)
 traps_wk= m1 %>%
   group_by(year, week) %>%
   summarize(no_traps = sum(number_of_traps)) # summarize the group data
-  # creates new data frame named traps_wk with columns "year", "week," 
-  # and "no_traps" (total number of traps)
+# creates new data frame named traps_wk with columns "year", "week," 
+# and "no_traps" (total number of traps)
 
 
 # plot the number of traps per CDC week to check code success
@@ -223,7 +223,7 @@ m_abund_gen = m2 %>%
     species %in% c("Psorophora ferox") ~ "Multivoltine Psorophora",
     TRUE ~ "Other"
   ))
-  
+
 # abundance drop site info
 m_abund_gen = m_abund_gen %>%
   group_by(st_grp,
@@ -262,9 +262,9 @@ ggplot(m_abund_pos, aes(mosq_per_trap, fill = st_grp)) +
 # separate the positive data frame into univoltine and multivoltine
 m_pos_uni = m_abund_pos %>%
   filter(species %in% c("Aedes abserratus", "Aedes aurifer", "Aedes canadensis", 
-                  "Aedes cinereus", "Aedes communis", "Aedes excrucians", 
-                  "Aedes provocans", "Aedes sticticus", "Aedes stimulans", 
-                  "Aedes taeniorhynchus", "Aedes thibaulti", "Coquillettidia perturbans"))
+                        "Aedes cinereus", "Aedes communis", "Aedes excrucians", 
+                        "Aedes provocans", "Aedes sticticus", "Aedes stimulans", 
+                        "Aedes taeniorhynchus", "Aedes thibaulti", "Coquillettidia perturbans"))
 
 m_pos_multi = m_abund_pos %>%
   filter(species %in% c("Aedes cantator", "Aedes sollicitans", "Aedes triseriatus", "Aedes trivittatus", 
@@ -657,264 +657,7 @@ m_abund_mo2_coqp = m_abund_mo2 %>%
 # write.csv(m_abund_mo2, "data_mid/mosquito_abundance_by_month_CT_all_mosq.csv")
 
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#> DESCRIPTIVE PLOTS (OVERVIEW)
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# add a gen variable to the data plots
-m_abund_wk2 = m_abund_wk2 %>%
-  mutate(gen = case_when(
-    gen_genus %in% c("Univoltine Aedes", "Univoltine Coquillettidia") ~ "Univoltine",
-    gen_genus %in% c("Multivoltine Aedes", "Multivoltine Anopheles", "Multivoltine Culex", 
-                     "Multivoltine Culiseta", "Multivoltine Culex", 
-                     "Multivoltine Psorophora") ~ "Multivoltine",
-    TRUE ~ "Other"
-  ))
 
-
-# stack barplot of total number of mosquitoes sampled per year, per generation genus
-# order the mosquito species as desired
-gen_genus_order <- c(
-  "Multivoltine Aedes",
-  "Multivoltine Anopheles",
-  "Multivoltine Culex",
-  "Multivoltine Culiseta",
-  "Multivoltine Psorophora",
-  "Univoltine Coquillettidia",
-  "Univoltine Aedes"
-)
-
-# plot the values as a barplot
-abun_plot <- ggplot(m_abund_gen, aes(x = year, y = abundance, 
-                        fill = factor(gen_genus, levels = gen_genus_order))) +
-  geom_bar(stat = "identity") +
-  labs(title = "A", x = "Year", 
-       y = "Abundance", 
-       fill = "Generation Number and Genus") +
-  theme_classic() +
-  facet_wrap(~st_grp, ncol = 1) +
-  scale_fill_manual(values = c(
-    "Multivoltine Aedes" = "#000000",
-    "Multivoltine Anopheles" = "#41242b",
-    "Multivoltine Culex" = "#583b3e",
-    "Multivoltine Culiseta" = "#775c5a",
-    "Multivoltine Psorophora" = "#947e7c",
-    "Univoltine Coquillettidia" = "#65A2A7",
-    "Univoltine Aedes" = "#7BC3C5"
-  ))
-abun_plot
-# abundance is mean number of mosquitoes per trapping location
-
-
-# uni-voltine species seasonality
-# uni voltine order
-uni_genus_order <- c(
-  "Aedes cinereus",
-  "Aedes communis",
-  "Aedes excrucians",
-  "Aedes provocans",
-  "Aedes sticticus",
-  "Aedes stimulans",
-  "Aedes taeniorhynchus",
-  "Aedes thibaulti",
-  "Coquillettidia perturbans",
-  "Aedes abserratus",
-  "Aedes aurifer",
-  "Aedes canadensis"
-)
-
-# create a bar plot of univoltine species abundance per week over the past years
-uni_bar_plot <- ggplot(m_abund_wk %>%
-                     filter(species %in% c("Aedes abserratus", "Aedes aurifer", "Aedes canadensis", 
-                                           "Aedes cinereus", "Aedes communis", "Aedes excrucians", 
-                                           "Aedes provocans", "Aedes sticticus", "Aedes stimulans", 
-                                           "Aedes taeniorhynchus", "Aedes thibaulti", "Coquillettidia perturbans")),
-                   aes(week, abundance, fill = factor(species, levels = uni_genus_order))) +
-  geom_bar(stat = "identity") +
-  labs(title = "Univoltine Mosquito Seasonality", x = "Week", 
-       y = "Abundance", 
-       fill = "Species") +
-  theme_classic() + 
-  scale_y_continuous(limits = c(0, 3500, na.rm = TRUE)) +
-  scale_fill_manual(values = c(
-    "Aedes cinereus" = "#171e1f",
-    "Aedes communis" = "#181f20",
-    "Aedes excrucians" = "#112b32",
-    "Aedes provocans" = "#002F3D",
-    "Aedes sticticus" = "#00394d",
-    "Aedes stimulans" = "#004E6E",
-    "Aedes taeniorhynchus" = "#006080",
-    "Aedes thibaulti" = "#3b7c8f",
-    "Coquillettidia perturbans" = "#65A2A7",
-    "Aedes abserratus" = "#71b2b7",
-    "Aedes aurifer" = "#7cbfc5",
-    "Aedes canadensis" = "#87ccd3"
-  )) +
-  scale_color_manual(values = c(
-    "Aedes cinereus" = "#171e1f",
-    "Aedes communis" = "#181f20",
-    "Aedes excrucians" = "#112b32",
-    "Aedes provocans" = "#002F3D",
-    "Aedes sticticus" = "#00394d",
-    "Aedes stimulans" = "#004E6E",
-    "Aedes taeniorhynchus" = "#006080",
-    "Aedes thibaulti" = "#3b7c8f",
-    "Coquillettidia perturbans" = "#65A2A7",
-    "Aedes abserratus" = "#71b2b7",
-    "Aedes aurifer" = "#7cbfc5",
-    "Aedes canadensis" = "#87ccd3"
-  ))
-
-
-# create a plot summarizing the average pir per week over the past years
-uni_line_plot <- m_abund_wk2 %>%
-  filter(species %in% c("Aedes abserratus", "Aedes aurifer", "Aedes canadensis", 
-                        "Aedes cinereus", "Aedes communis", "Aedes excrucians", 
-                        "Aedes provocans", "Aedes sticticus", "Aedes stimulans", 
-                        "Aedes taeniorhynchus", "Aedes thibaulti", "Coquillettidia perturbans")) %>%
-  group_by(year, week) %>%
-  summarize(mean_pir = mean(pir, na.rm = TRUE),
-            ci_low = max(0, mean_pir - qt(0.975, length(pir) - 1) * sd(pir, na.rm = TRUE) / sqrt(length(pir))),
-            ci_high = mean_pir + qt(0.975, length(pir) - 1) * sd(pir, na.rm = TRUE) / sqrt(length(pir))) %>%
-  ggplot(aes(x = week, y = mean_pir, group = year, color = as.factor(year))) +
-  geom_line() +
-  geom_ribbon(aes(ymin = ci_low, ymax = ci_high, fill = as.factor(year)), alpha = 0.3) +
-  labs(title = "Univoltine PIR Seasonality",
-       x = "Week",
-       y = "Mean JCV PIR",
-       color = "Year") +
-  theme_classic() +
-  scale_y_continuous(limits = c(0, 0.12, na.rm = TRUE)) + 
-  scale_color_manual(values = c(
-    "#91bfdb", "#a6cee3", "#cab2d6", "#6a51a3", "#6a3d9a", "#483897", 
-    "#313696", "#1f78b4", "#4575b4", "#008080", "#009369", "#33a02c", 
-    "#b2df8a", "#ffff99", "#fee08b", "#fdbf6f", "#fdae61", "#fe993b", 
-    "#ff7f00", "#b15928", "#d6604d", "#d73027", "#e31a1c", "#b2182b", 
-    "#67001f", "#560b0e")) +
-  scale_fill_manual(values = c(
-    "#91bfdb", "#a6cee3", "#cab2d6", "#6a51a3", "#6a3d9a", "#483897", 
-    "#313696", "#1f78b4", "#4575b4", "#008080", "#009369", "#33a02c", 
-    "#b2df8a", "#ffff99", "#fee08b", "#fdbf6f", "#fdae61", "#fe993b", 
-    "#ff7f00", "#b15928", "#d6604d", "#d73027", "#e31a1c", "#b2182b", 
-    "#67001f", "#560b0e")) +
-  guides(color = guide_legend(title = "Year"), fill = guide_legend(title = "Year"))
-
-# combine the univoltine plots
-uni_combined_plot <- ggarrange(uni_bar_plot, uni_line_plot, nrow = 2, align = "v")
-
-# print the combined univoltine plot
-print(uni_combined_plot)
-
-
-
-# multi voltine order
-multi_genus_order <- c(
-  "Culiseta morsitans",
-  "Culiseta melanura",
-  "Culex salinarius",
-  "Culex restuans",
-  "Culex erraticus",
-  "Psorophora ferox",
-  "Anopheles walkeri",
-  "Anopheles quadrimaculatus",
-  "Aedes vexans",
-  "Aedes trivittatus",
-  "Aedes triseriatus",
-  "Aedes sollicitans",
-  "Anopheles punctipennis",
-  "Aedes cantator"
-)
-
-
-# create a bar plot of multivoltine species abundance per week over the past years
-multi_bar_plot <- ggplot(m_abund_wk %>%
-                         filter(species %in% c("Aedes cantator", "Aedes sollicitans", "Aedes triseriatus", "Aedes trivittatus", 
-                                               "Aedes vexans", "Anopheles punctipennis", "Anopheles quadrimaculatus", 
-                                               "Anopheles walkeri", "Culex erraticus", "Culex restuans", "Culex salinarius", 
-                                               "Culiseta melanura", "Culiseta morsitans", "Psorophora ferox")),
-                       aes(week, abundance, fill = factor(species, levels = multi_genus_order))) +
-  geom_bar(stat = "identity") +
-  labs(title = "Multivoltine Mosquito Seasonality", x = "Week", 
-       y = "Abundance", 
-       fill = "Species") +
-  theme_classic() + 
-  scale_y_continuous(limits = c(0, 3500, na.rm = TRUE)) +
-  scale_fill_manual(values = c(
-    "Culiseta morsitans" = "#000000",
-    "Culiseta melanura" = "#32161f",
-    "Culex salinarius" = "#41242b",
-    "Culex restuans" = "#583b3e",
-    "Culex erraticus" = "#684b4c",
-    "Psorophora ferox" = "#775c5a",
-    "Anopheles walkeri" = "#8d6866",
-    "Anopheles quadrimaculatus" = "#a47574",
-    "Aedes vexans" = "#bb8180",
-    "Aedes trivittatus" = "#de9494",
-    "Aedes triseriatus" = "#eea6a5",
-    "Aedes sollicitans" = "#fdb5b4",
-    "Anopheles punctipennis" = "#fac1c0",
-    "Aedes cantator" = "#f6d6d5"
-  )) + 
-  scale_color_manual(values = c(
-    "Culiseta morsitans" = "#000000",
-    "Culiseta melanura" = "#32161f",
-    "Culex salinarius" = "#41242b",
-    "Culex restuans" = "#583b3e",
-    "Culex erraticus" = "#684b4c",
-    "Psorophora ferox" = "#775c5a",
-    "Anopheles walkeri" = "#8d6866",
-    "Anopheles quadrimaculatus" = "#a47574",
-    "Aedes vexans" = "#bb8180",
-    "Aedes trivittatus" = "#de9494",
-    "Aedes triseriatus" = "#eea6a5",
-    "Aedes sollicitans" = "#fdb5b4",
-    "Anopheles punctipennis" = "#fac1c0",
-    "Aedes cantator" = "#f6d6d5"
-  ))
-
-# create a plot summarizing the average pir per week over the past years
-multi_line_plot <- m_abund_wk2 %>%
-  filter(species %in% c("Aedes cantator", "Aedes sollicitans", "Aedes triseriatus", "Aedes trivittatus", 
-                        "Aedes vexans", "Anopheles punctipennis", "Anopheles quadrimaculatus", 
-                        "Anopheles walkeri", "Culex erraticus", "Culex restuans", "Culex salinarius", 
-                        "Culiseta melanura", "Culiseta morsitans", "Psorophora ferox")) %>%
-  group_by(year, week) %>%
-  summarize(mean_pir = mean(pir, na.rm = TRUE),
-            ci_low = max(0, mean_pir - qt(0.975, length(pir) - 1) * sd(pir, na.rm = TRUE) / sqrt(length(pir))),
-            ci_high = mean_pir + qt(0.975, length(pir) - 1) * sd(pir, na.rm = TRUE) / sqrt(length(pir))) %>%
-  ggplot(aes(x = week, y = mean_pir, group = year, color = as.factor(year))) +
-  geom_line() +
-  geom_ribbon(aes(ymin = ci_low, ymax = ci_high, fill = as.factor(year)), alpha = 0.3) +
-  labs(title = "Multivoltine PIR Seasonality",
-       x = "Week",
-       y = "Mean JCV PIR",
-       color = "Year") +
-  theme_classic() +
-  scale_y_continuous(limits = c(0, 0.12, na.rm = TRUE)) + 
-  scale_color_manual(values = c(
-    "#91bfdb", "#a6cee3", "#cab2d6", "#6a51a3", "#6a3d9a", "#483897", 
-    "#313696", "#1f78b4", "#4575b4", "#008080", "#009369", "#33a02c", 
-    "#b2df8a", "#ffff99", "#fee08b", "#fdbf6f", "#fdae61", "#fe993b", 
-    "#ff7f00", "#b15928", "#d6604d", "#d73027", "#e31a1c", "#b2182b", 
-    "#67001f", "#560b0e")) +
-  scale_fill_manual(values = c(
-    "#91bfdb", "#a6cee3", "#cab2d6", "#6a51a3", "#6a3d9a", "#483897", 
-    "#313696", "#1f78b4", "#4575b4", "#008080", "#009369", "#33a02c", 
-    "#b2df8a", "#ffff99", "#fee08b", "#fdbf6f", "#fdae61", "#fe993b", 
-    "#ff7f00", "#b15928", "#d6604d", "#d73027", "#e31a1c", "#b2182b", 
-    "#67001f", "#560b0e")) +
-  guides(color = guide_legend(title = "Year"), fill = guide_legend(title = "Year"))
-
-# combine the multivoltine plots
-multi_combined_plot <- ggarrange(multi_bar_plot, multi_line_plot, nrow = 2, align = "v")
-
-# print the combined multivoltine plot
-print(multi_combined_plot)
-
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#> FIGURE 3 VISUALIZATION
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # create a new data frame to include only univoltine species
 m_abund_wk2_u = m_abund_wk2 %>%
   filter(gen == "Univoltine") %>%
@@ -949,7 +692,7 @@ abundance_plot_combined <- ggplot() +
   theme(axis.title.x = element_text(face = "bold"), 
         axis.title.y = element_text(face = "bold")) +
   scale_color_manual(values = c("#775c5a", "#7BC3C5")) +
-  scale_fill_manual(values = c("#775c5a", "#7BC3C5")) +
+  scale_fill_manual(values = c("#775c5a", "#7BC3C5")) + # 15-pt Helvetica everywhere
   scale_x_continuous(name = "Month", 
                      limits = c(1, 25), breaks = c(1:25), 
                      labels = c("", "Jun", "", "", "", "", 
@@ -957,8 +700,8 @@ abundance_plot_combined <- ggplot() +
                                 "", "", "Sept", "", "", "", 
                                 "", "Oct", "", "", "", "", "Nov")) +
   theme(
-    legend.position      = c(1, 1),
-    legend.justification = c(1, 1) 
+    legend.position      = c(1, 1),     # (x, y) in NPC units
+    legend.justification = c(1, 1)      # align legend’s bottom-right corner
   )
 abundance_plot_combined
 
@@ -1055,14 +798,11 @@ vi_plot_combined <- ggplot() +
 vi_plot_combined
 
 # stack vertically
-fig1_plot <- ggarrange(abundance_plot_combined, pir_plot_combined, vi_plot_combined, nrow = 3, align = "v")
-fig1_plot
-
-fig3a_plot <- ggarrange(abundance_plot_combined, pir_plot_combined, vi_plot_combined, ncol = 3, align = "h")
-fig3a_plot
+fig5b_plot <- ggarrange(abundance_plot_combined, pir_plot_combined, vi_plot_combined, ncol = 3, align = "h")
+fig5b_plot
 
 # save the plot
-ggsave("fig3_surv_h.png", plot = fig3a_plot, width = 20, height = 5, dpi = 600, device = "png")
+ggsave("fig5_surv_h.png", plot = fig3a_plot, width = 20, height = 5, dpi = 600, device = "png")
 
 
 
@@ -1119,8 +859,8 @@ abun_pos_plot
 ggsave("suppl_abund.png", plot = abun_pos_plot, width = 20, height = 6, dpi = 600, device = "png")
 
 
-# additional, new figure 3a
-# making a new panel a for fig3
+
+# making a new panel a for fig4
 summary_pos <- jcv_pos %>%
   count(species, voltine_genus_grouped)
 
@@ -1129,7 +869,7 @@ summary_pos <- summary_pos %>%
   group_by(species) %>%
   summarise(n = sum(n), voltine_genus_grouped = first(voltine_genus_grouped)) %>%
   ungroup() %>%
-  mutate(species = reorder(species, -n))
+  mutate(species = reorder(species, -n))  # Descending order
 
 # plot bars by species
 fig3a <- ggplot(summary_pos, aes(x = species, y = n, fill = voltine_genus_grouped)) +
@@ -1191,5 +931,4 @@ fig3a <- ggplot(summary_pos, aes(x = species, y = n, fill = voltine_genus_groupe
 
 
 # save the plot
-ggsave("fig3a.png", plot = fig3a, width = 18, height = 6, dpi = 600, device = "png")
-
+ggsave("fig5a.png", plot = fig3a, width = 18, height = 6, dpi = 600, device = "png")
