@@ -4,5 +4,5 @@ This README contains information related to our research on JCV and its correspo
 
 Specifically, each folder contains:
 
-* BEAST_XMLs
-* scripts
+* [BEAST_XMLs]()
+* [scripts]()
